@@ -11,60 +11,87 @@ class State(pc.State):
     custstart: str = ""
     custend: int = ""
     slareturn: str = ""
-    input1: int
-    input2: int
+    button: bool = False
+    input1: bool = False
+    input2: bool = False
+    input3: bool = False
     
     def senditbish(self):
         self.slareturn
         self.slareturn=getsla(self.datentime, self.custSLA, self.custstart, self.custend)
-        #return slareturn
-        
-    def validate_time(custstart):
+
+    def set_datentime(self, datentime):
+        self.button
+        self.input3
+        try:
+            datetime.strptime(datentime, "%d-%m-%Y %H:%M:%S")
+            self.button = False
+            self.datentime = datentime
+            self.input3 = False
+        except ValueError:
+            self.button = True
+            self.datentime = "INVALID ENTRY"
+            self.input3 = True
+    
+    def set_custstart(self, custstart):
+        self.button
+        self.input1
         try:
             if len(custstart) == 4: 
                 datetime.strptime(custstart, '%H%M')
-            return False
-        else: return True
-        
+                self.button = False
+                self.custstart = custstart
+                self.input1 = False
+            else:
+                self.button = True
+                self.custstart = "INVALID"
+                self.input1 = True
         except ValueError:
-            return True    
-    
+            self.button = True
+            self.custstart = "INVALID"
+            self.input1 = True
+
+    def set_custend(self, custend):
+        self.button
+        self.input2
+        try:
+            if len(custend) == 4: 
+                datetime.strptime(custend, '%H%M')
+                self.button = False
+                self.custend = custend
+                self.input2 = False
+            else:
+                self.button = True
+                self.custend = "INVALID"
+                self.input2 = True
+        except ValueError:
+            self.button = True
+            self.custend = "INVALID"
+            self.input2 = True
+
 def start_input(custstart):
     return pc.input(
-        on_blur=State.set_custstart,
-        in_invalid=validate_time(State.custstart),
+        on_change=State.set_custstart,
         is_required=True,
+        is_invalid=State.input1,
         error_border_color="red",
+        variant = "outline",
         color="black",
-        bg="white"
+        bg="white",
+        size="sm"
         )
 
 def end_input(custend):
-    return pc.number_input(
+    return pc.input(
         on_change=State.set_custend,
-        max_=2359,
-        min_=0000,
-        keep_within_range=True,
         is_required=True,
+        is_invalid=State.input2,
+        error_border_color="red",
+        variant = "outline",
         color="black",
-        bg="white"
+        bg="white",
+        size="sm"
         )
-
-
-
-def displayselections():
-    return pc.container(
-            pc.vstack(
-            pc.text("Selections",as_="b"),
-            pc.text("Case create date/time:"),
-            pc.text(State.datentime),
-            pc.text("SLA Selected: " + State.custSLA),
-            pc.text("Cust availability"),
-            pc.text("From: ",State.custstart, "until: ",State.custend),
-            ),
-            color="white"
-    )
-     
 def index():
     login_container = pc.container(
         pc.vstack(
@@ -86,12 +113,17 @@ def index():
                     "Copy/Paste SC case create date and time"
                     ),
                 pc.input(
-                    placeholder="1/1/1111 00:00:00",
-                    on_blur=State.set_datentime,
+                    placeholder="1-1-1111 00:00:00",
+                    on_change=State.set_datentime,
                     is_required=True,
                     color="black",
                     bg="white",
+                    is_invalid=State.input3,
+                    error_border_color="red",
+                    variant = "outline",
+                    size="sm"
                     ),
+                pc.text("Create date/time: ", State.datentime, color="white"),
                 pc.text(
                     "Select Customer SLA (in hours)",
                     margin_top="1rem"
@@ -114,25 +146,23 @@ def index():
                     center_content=True,
                     ),
                 pc.hstack(
-                    start_input(State.custstart),
-                    end_input(State.custend),
+                    pc.vstack(
+                        start_input(State.custstart),
+                        pc.text("From: ",State.custstart, color="white"),
                     ),
-                margin_top="1rem",
+                    pc.vstack(
+                        end_input(State.custend),
+                        pc.text("Until: ", State.custend, color="white")
+                    ),
+                    ),
                 ),
-            pc.box(
-                displayselections(),
-                border_radius="sm",
-                border_color="white",
-                border_width="thin",
-                padding=1,
-                width="80%",
-                center_content=True
-            ),
             pc.button(
                 "Calculate SLA",
                 color_scheme="green",
                 size="lg",
                 on_click=State.senditbish,
+                is_disabled=State.button,
+                margin_top="1rem",
                 ),
             pc.box(
                 pc.vstack(
@@ -148,11 +178,12 @@ def index():
             ),
         #container settings
         width="400px",
-        height="85vh",
+        height="70vh",
         center_content=True,
         bg="#1D2330",
         borderRadius="15px",
         boxShadow="41px -41px 82px #0d0f15, -41px 41px 82px #2d374b",
+        margin_top="3rem",
         )
     
     #main stack to return
@@ -163,7 +194,7 @@ def index():
         justifyContent="centre",
         maxWidth="auto",
         height="100vh",
-        bg="#1D2330"
+        bg="#1D2330",
     )
 
     #return the main stack
