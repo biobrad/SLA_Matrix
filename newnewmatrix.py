@@ -12,16 +12,14 @@ class App(customtkinter.CTk):
         self.title("SLA Matrix")
         self.minsize(300, 200)
            
-        self.grid_rowconfigure(0, weight=0)
+        self.grid_rowconfigure(0,weight=0)
         self.grid_columnconfigure(0, weight=0)
         self.mainframe = customtkinter.CTkFrame(self, width=300, height=500)
         self.mainframe.grid(row=0, column=0,columnspan=2, padx=20, pady=20)
-        self.mainframe.grid_rowconfigure((0,1,2), weight=1)
+        self.mainframe.grid_rowconfigure((0,1,2,3), weight=1)
         self.mainframe.grid_columnconfigure(0, weight=1)
-        self.logo_label = customtkinter.CTkLabel(self.mainframe, text="SLA MATRIX", fg_color=("white", "#3399FF"), corner_radius=8, font=customtkinter.CTkFont(size=30, weight="bold"))
-        self.logo_label.grid(row=0, column=0, columnspan=2, pady=(20, 0))
-        self.my_frame = customtkinter.CTkFrame(master=self.mainframe)
-        self.my_frame.grid(row=1, column=0, columnspan=2, padx=20, pady=(20, 0))                                                                    
+        self.logo_label = customtkinter.CTkLabel(self.mainframe, text="SLA MATRIX", font=customtkinter.CTkFont(size=30, weight="bold"))
+        self.logo_label.grid(row=0, column=0, columnspan=2, pady=(20, 0))                                
 
         ### Field Validations ###
         ### Start Time validate ###
@@ -63,18 +61,30 @@ class App(customtkinter.CTk):
         
         ### Submit button function###
         def button_callback():
-            #gather = (self.entry1.get(),self.combobox.get(),self.entry2.get(), self.entry3.get())
             self.textbox.delete("0.0", "end")
-            self.textbox.insert("0.0", getsla(self.entry1.get(),self.combobox.get(),self.entry2.get(), self.entry3.get()))
+            en1 = self.entry1.get()
+            en2 = self.entry2.get()
+            en3 = self.entry3.get()
+            com = self.combobox.get()
+            try:
+                if datetime.strptime(en2, '%H%M') and datetime.strptime(en3, '%H%M') and datetime.strptime(en1, "%d-%m-%Y %H:%M:%S") and str(com).isnumeric():
+                    self.textbox.insert("0.0", getsla(self.entry1.get(),self.combobox.get(),self.entry2.get(), self.entry3.get()))
+                else:
+                    self.textbox.insert("0.0", "AN INPUT IS MISSING OR INVALID, PLEASE CHECK")
+            except ValueError:
+                self.textbox.insert("0.0", "AN INPUT IS INVALID, PLEASE CHECK")
+                    
         
-        ### GUI Main ###                                                                
+        ### GUI Main ###   
+        self.my_frame = customtkinter.CTkFrame(master=self.mainframe)
+        self.my_frame.grid(row=1, column=0, columnspan=2, padx=20, pady=(20, 0))                                                             
         self.grid_rowconfigure((0,1,2,3,4,5,6,7,8), weight=1)
         self.grid_columnconfigure((0,1), weight=1)
-        self.label1 = customtkinter.CTkLabel(master=self.my_frame, text="Copy/Paste SC create date/time", fg_color=("white", "#3399FF"), corner_radius=8, font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.label1 = customtkinter.CTkLabel(master=self.my_frame, text="Copy/Paste SC create date/time", font=customtkinter.CTkFont(size=15, weight="bold"))
         self.label1.grid(row=0, column=0, columnspan=2, padx=20, pady=(20, 0))
         self.entry1 = customtkinter.CTkEntry(master=self.my_frame, placeholder_text="1-1-2023 00:00:00", text_color="white")
         self.entry1.grid(row=1, column=0, columnspan=2, padx=0, pady=(5,0))
-        self.label2 = customtkinter.CTkLabel(master=self.my_frame, text="Customer Availability", fg_color=("white", "#003399"), corner_radius=8, font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.label2 = customtkinter.CTkLabel(master=self.my_frame, text="Customer Availability", font=customtkinter.CTkFont(size=15, weight="bold"))
         self.label2.grid(row=2, column=0, columnspan=2, padx=20, pady=(20, 0), sticky="n")
         self.label3 = customtkinter.CTkLabel(master=self.my_frame, text="Start", justify="center")
         self.label3.grid(row=3, column=0, padx=20, pady=0)
@@ -82,32 +92,31 @@ class App(customtkinter.CTk):
         self.label4.grid(row=3, column=1, padx=20, pady=0)
         self.entry2 = customtkinter.CTkEntry(master=self.my_frame, validate="focusout", validatecommand=self.vcmd2, placeholder_text="HHMM")
         self.entry2.grid(row=4, column=0, padx=20)
-        
         self.label_error2 = customtkinter.CTkLabel(self.my_frame, text="", fg_color='transparent', height=10)
         self.label_error2.grid(row=5, column=0, padx=1)
-        
         self.entry3 = customtkinter.CTkEntry(master=self.my_frame, validate="focusout", validatecommand=self.vcmd3, placeholder_text="HHMM")
         self.entry3.grid(row=4, column=1, padx=20)
-        
         self.label_error3 = customtkinter.CTkLabel(self.my_frame, text="", fg_color='transparent', height=10)
         self.label_error3.grid(row=5, column=1, padx=1)
-        
-        self.label5 = customtkinter.CTkLabel(master=self.my_frame, text="Select SLA in Hours", fg_color=("white", "#000066"), corner_radius=8, font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.label5 = customtkinter.CTkLabel(master=self.my_frame, text="Select SLA in Hours", font=customtkinter.CTkFont(size=15, weight="bold"))
         self.label5.grid(row=6, column=0, columnspan=2, padx=20, pady=0)
         self.combobox = customtkinter.CTkComboBox(master=self.my_frame,
                                      values=["4", "8", "12", "24"]
                                      )
         self.combobox.grid(row=7, columnspan=2, padx=20, pady=10)
-        self.button = customtkinter.CTkButton(master=self.my_frame, command=button_callback, text="Get Calculated SLA", fg_color=('#00cc00'),border_width=2, border_color=('#028900'), hover_color=('#028900'), width=200, height=60, font=customtkinter.CTkFont(size=15, weight="bold"))
+        self.button = customtkinter.CTkButton(master=self.my_frame, command=button_callback, text="Get Calculated SLA", fg_color=('#028900'),border_width=2, border_color=('#028900'), hover_color=('#057103'), width=200, height=60, font=customtkinter.CTkFont(size=15, weight="bold"))
         self.button.grid(row=8, column=0, columnspan=2, padx=20, pady=(0,10))
         self.textbox = customtkinter.CTkTextbox(master=self.mainframe, width=200, height=60)
         self.textbox.grid(row=2, column=0, columnspan=2, padx=20, pady=(0, 20), sticky="ew")
+        self.label6 = customtkinter.CTkLabel(master=self, text="SLA Matrix v0.1, Built and mainted by Brad Hart - d403298", font=customtkinter.CTkFont(size=10))
+        self.label6.grid(row=3, column=0, columnspan=2, padx=5, pady=(20,20), sticky="n")
         ### GUI end ###
+        
         ### SLA Calculation Start ####
         
         def getsla(CASECREATEDATETIME, SLA, CUSTSTART, CUSTEND):
             #timezone = input(str("Which part of Australia? (North/NSW/Queensland/South/West): "))
-            print(CASECREATEDATETIME)
+            #print(CASECREATEDATETIME)
             create = datetime.strptime(CASECREATEDATETIME, "%d-%m-%Y %H:%M:%S")
             #create += datetime.datetime.create()
             # Define the start and end of the business day
