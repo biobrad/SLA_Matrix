@@ -2,7 +2,9 @@ import tkinter
 import customtkinter
 from tkinter import font
 from tkinter import ttk
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
+
+customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 
 ### for testing purposes 25-03-2023 17:05:15 ####
 class App(customtkinter.CTk):
@@ -91,8 +93,7 @@ class App(customtkinter.CTk):
                     self.textbox.insert("0.0", "AN INPUT IS MISSING OR INVALID, PLEASE CHECK")
             except ValueError:
                 self.textbox.insert("0.0", "AN INPUT IS INVALID, PLEASE CHECK")
-                    
-        
+                           
         ### GUI Main ###   
         self.my_frame = customtkinter.CTkFrame(master=self.mainframe)
         self.my_frame.grid(row=1, column=0, columnspan=2, padx=20, pady=(20, 0))                                                             
@@ -128,12 +129,16 @@ class App(customtkinter.CTk):
         self.button.grid(row=9, column=0, columnspan=2, padx=20, pady=(0,10))
         self.textbox = customtkinter.CTkTextbox(master=self.mainframe, width=200, height=60)
         self.textbox.grid(row=2, column=0, columnspan=2, padx=20, pady=(0, 20), sticky="ew")
+        self.switch_var = customtkinter.StringVar(value="off")
+        self.switch_1 = customtkinter.CTkSwitch(master=self.mainframe, text="dark/light", command=self.switch_event,
+                                   variable=self.switch_var, onvalue="on", offvalue="off")
+        self.switch_1.grid(row=3, column=0, padx=20, pady=20)
         self.label6 = customtkinter.CTkLabel(master=self.mainframe, text="SLA Matrix v0.2, Built and mainted by Brad Hart - d403298", font=customtkinter.CTkFont(size=10))
-        self.label6.grid(row=3, column=0, columnspan=2, padx=5, pady=(20,20), sticky="n")
+        self.label6.grid(row=3, column=1, padx=5, pady=(20,20), sticky="e")
         ### GUI end ###
         
         ### SLA Calculation Start ####
-        
+
         def getsla(CASECREATEDATETIME, SLA, CUSTSTART, CUSTEND):
             #timezone = input(str("Which part of Australia? (North/NSW/Queensland/South/West): "))
             #print(CASECREATEDATETIME)
@@ -145,6 +150,9 @@ class App(customtkinter.CTk):
             end_time = datetime.strptime(CUSTEND, "%H%M")
             end_time = end_time.time()
 
+            Now = datetime.now()
+            
+            
             # Get the case creation date and time
             #now = BEGIN #datetime.datetime.now(pytz.timezone('Australia/' + timezone))
             #print(f"Current time in {timezone} Australia is {now}")
@@ -180,6 +188,14 @@ class App(customtkinter.CTk):
             # Print end date and time of SLA period
             return end_datetime.strftime('New SLA Date/time: %d-%m-%Y %H:%M:%S')
 
+    def switch_event(self):
+        if self.switch_var == "on":
+            customtkinter.set_appearance_mode("Dark")
+            self.switch_var = "off"
+        else:
+            customtkinter.set_appearance_mode("Light")
+            self.switch_var = "on"
+                
 if __name__ == "__main__":
     app = App()
     app.mainloop()
