@@ -194,7 +194,7 @@ class App(customtkinter.CTk):
                     return new_sla, message
                 elif in_between(new_sla.time(), time(7), time(10)):
                     if datetime.combine(now_date, end_delta) - now > timedelta(hours=4):
-                        alternate = datetime.strftime(now() + timedelta(4), '%d-%m-%Y %H:%M:%S') 
+                        alternate = datetime.strftime(datetime.combine(new_sla.date(), end_delta) - timedelta(days=1), '%d-%m-%Y %H:%M:%S')
                         message = f" - SLA Falls between 7am-10am, change to {alternate}. If afterhours, follow after hours process."
                         return new_sla, message
                     else:
