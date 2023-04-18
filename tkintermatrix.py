@@ -3,6 +3,7 @@ import customtkinter
 from tkinter import font
 from tkinter import ttk
 from datetime import datetime, timedelta, time
+import holidays
 
 customtkinter.set_appearance_mode("Dark")  # Modes: "System" (standard), "Dark", "Light"
 
@@ -321,10 +322,8 @@ class App(customtkinter.CTk):
             new_sla = ""
             Delay = " - Advise customer of delayed SLA, negotiate AH Appointment if customer requires."
             output = ""
+            au_holidays = holidays.AU()
 
-            if start_time > end_time:
-                return "Cust availability start time cannot be greater than end time. If after hours is required, follow after hours process"
-    
             def adddays(hours_avail, remainder, day_counter, slacount):
                 slacount = remainder
                 while slacount > timedelta(0):
@@ -372,14 +371,28 @@ class App(customtkinter.CTk):
                     message = f" - New SLA is Afterhours! - Use {alternate} unless AH is organised with customer"
                 return new_sla, message
 
+            def next_business_day(date):
+                while True:
+                    if date.weekday() >= 5 or date in au_holidays:
+                        date += timedelta(days=1)
+                    else:
+                        return date
+
             def returnsla(new_sla, message=""):
                 print("new_sla weekday = ", new_sla.weekday())
                 weekend_date = ""
+                farts = ""
+
+                if new_sla in au_holidays:
+                    new_pubholdate = next_business_day(new_sla)
+                    farts = "public"
+
                 if new_sla.weekday() >= 5:
                     weekend_date, wknd_day = weekendcheck(new_sla)
 
-                if in_between(new_sla.time(), time(17), time(7)):
-                    new_sla, message = fivetoseven(new_sla)
+                if in_between(new_sla.time(), time(19), time(7)):
+                    new_sla, message = seventoseven(new_sla)
+
                 new_sla = new_sla.strftime("%d-%m-%Y %H:%M:%S")
                 print("weekenddate print: ", weekend_date)
 
@@ -387,12 +400,20 @@ class App(customtkinter.CTk):
                     new_weekend_date = weekend_date.strftime("%d-%m-%Y %H:%M:%S")
                     weekendout = f"Calculated SLA {new_sla} is a {wknd_day}. Follow afterhours process or use {new_weekend_date} {message}"
                     return weekendout
+                elif farts == "public":
+                    new_pubholdate = new_pubholdate.strftime("%d-%m-%Y %H:%M:%S")
+                    pubholout = f"Calculated SLA {new_sla} is a Public Holiday. Follow afterhours process or use {new_pubholdate} {message}"
+                    return pubholout
                 else:
                     # print("line 92 send it")
                     sendit = f"New SLA = {new_sla}{message}"
                     return sendit
             # Calculate SLA consumed on first day of ticket creation
             # If the create date and time is greater than the available time, subtract the create time from the daily available time to get how much SLA is used on the first day.
+
+            if start_time > end_time:
+                return "Cust availability start time cannot be greater than end time. If after hours is required, follow after hours process"
+
             if create > datetime.combine(
                 create.date(), start_time
             ) and create < datetime.combine(create.date(), end_time):
