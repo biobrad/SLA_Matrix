@@ -27,7 +27,7 @@ class App(customtkinter.CTk):
             text="SLA MATRIX",
             font=customtkinter.CTkFont(size=30, weight="bold"),
         )
-        self.logo_label.grid(row=0, column=0, columnspan=2, pady=(20, 0))
+        self.logo_label.grid(row=0, column=0, columnspan=2)
 
         ### Field Validations ###
         ### Create date validation ###
@@ -87,7 +87,7 @@ class App(customtkinter.CTk):
         ######
 
         ### Submit button function###
-        def button_callback():
+        def button_callback(*args):
             self.textbox.delete("0.0", "end")
             en1 = self.entry1.get()
             en2 = self.entry2.get()
@@ -145,7 +145,7 @@ class App(customtkinter.CTk):
             tearoff=False,
             background="#565b5e",
             fg="white",
-            font=("", 15),
+            font=("", 13),
             borderwidth=0,
             bd=0,
         )
@@ -192,7 +192,7 @@ class App(customtkinter.CTk):
             tearoff=False,
             background="#565b5e",
             fg="white",
-            font=("", 15),
+            font=("", 13),
             borderwidth=0,
             bd=0,
         )
@@ -223,7 +223,7 @@ class App(customtkinter.CTk):
             tearoff=False,
             background="#565b5e",
             fg="white",
-            font=("", 15),
+            font=("", 13),
             borderwidth=0,
             bd=0,
         )
@@ -261,11 +261,12 @@ class App(customtkinter.CTk):
             hover_color=("#057103"),
             width=200,
             height=60,
-            font=customtkinter.CTkFont(size=15, weight="bold"),
-        )
+            font=customtkinter.CTkFont(size=15, weight="bold")
+            )
+        self.button.bind('<Return>', command=button_callback)
         self.button.grid(row=9, column=0, columnspan=2, padx=20, pady=(0, 10))
         self.textbox = customtkinter.CTkTextbox(
-            master=self.mainframe, width=250, height=80
+            master=self.mainframe, width=240, height=80
         )
         self.textbox.grid(
             row=2, column=0, columnspan=2, padx=20, pady=(0, 20), sticky="ew"
@@ -274,6 +275,7 @@ class App(customtkinter.CTk):
         self.RightClickMenu4 = tkinter.Menu(
             self.textbox,
             tearoff=False,
+            font=("", 13),
             background="#565b5e",
             fg="white",
             borderwidth=0,
@@ -297,7 +299,7 @@ class App(customtkinter.CTk):
         self.switch_1.grid(row=3, column=0, padx=20, pady=20)
         self.label6 = customtkinter.CTkLabel(
             master=self.mainframe,
-            text="SLA Matrix v0.3, Built and maintained by Brad Hart - d403298",
+            text="SLA Matrix v0.6, Built and maintained by Brad Hart - d403298",
             font=customtkinter.CTkFont(size=10),
         )
         self.label6.grid(row=3, column=1, padx=5, pady=(20, 20), sticky="e")
@@ -314,15 +316,15 @@ class App(customtkinter.CTk):
             now = datetime.now()
             now_date = now.date()
             now_time = now.time()
-            hours_avail = datetime.combine(now_date, end_time) - datetime.combine(
-                now_date, start_time
-            )
+            hours_avail = datetime.combine(now_date, end_time) - datetime.combine(now_date, start_time)
             day_counter = 0
             slacount = 0
             new_sla = ""
-            Delay = " - Advise customer of delayed SLA, negotiate AH Appointment if customer requires."
+            newline = '\n'
+            Delay = f"{newline}Advise customer of delayed SLA, negotiate AH Appointment if customer requires."
             output = ""
             au_holidays = holidays.AU()
+            
 
             def adddays(hours_avail, remainder, day_counter, slacount):
                 slacount = remainder
@@ -368,7 +370,7 @@ class App(customtkinter.CTk):
                             ),
                             "%d-%m-%Y %H:%M:%S",
                         )
-                    message = f" - New SLA is Afterhours! - Use {alternate} unless AH is organised with customer"
+                    message = f" - New SLA is Afterhours!{newline}Use {alternate} unless AH is organised with customer."
                 return new_sla, message
 
             def next_business_day(date):
@@ -398,11 +400,11 @@ class App(customtkinter.CTk):
 
                 if weekend_date != "":
                     new_weekend_date = weekend_date.strftime("%d-%m-%Y %H:%M:%S")
-                    weekendout = f"Calculated SLA {new_sla} is a {wknd_day}. Follow afterhours process or use {new_weekend_date} {message}"
+                    weekendout = f"Calculated SLA {new_sla} is a {wknd_day}.{newline}Follow afterhours process or use {new_weekend_date} {message}"
                     return weekendout
                 elif farts == "public":
                     new_pubholdate = new_pubholdate.strftime("%d-%m-%Y %H:%M:%S")
-                    pubholout = f"Calculated SLA {new_sla} is a Public Holiday. Follow afterhours process or use {new_pubholdate} {message}"
+                    pubholout = f"Calculated SLA {new_sla} is a Public Holiday.{newline}Follow afterhours process or use {new_pubholdate} {message}"
                     return pubholout
                 else:
                     # print("line 92 send it")
@@ -412,7 +414,7 @@ class App(customtkinter.CTk):
             # If the create date and time is greater than the available time, subtract the create time from the daily available time to get how much SLA is used on the first day.
 
             if start_time > end_time:
-                return "Cust availability start time cannot be greater than end time. If after hours is required, follow after hours process"
+                return f"Cust availability start time cannot be greater than end time.{newline}If after hours is required, follow after hours process"
 
             if create > datetime.combine(
                 create.date(), start_time
@@ -443,15 +445,11 @@ class App(customtkinter.CTk):
                 new_sla = now + timedelta(hours=4)
                 # print("If sla reminder less than zero, and datetime nowdate and customer endtime - now is greater than 4 hours, new sla= ", new_sla)
                 output = returnsla(new_sla)
-            elif sla_remainder <= timedelta(0) and datetime.combine(
-                now_date, end_time
-            ) - now < timedelta(hours=4):
+            elif sla_remainder <= timedelta(0) and datetime.combine(now_date, end_time) - now < timedelta(hours=4):
                 new_sla = datetime.combine(now_date, start_time) + timedelta(days=1)
                 # print("sla remainder <= 0 and customers end date today is less than 4 hours from now - should send delay message")
                 output = returnsla(new_sla, Delay)
-            slacount, day_counter = adddays(
-                hours_avail, sla_remainder, day_counter, slacount
-            )  # function call to loop to add days as per customer availbility and remainder of sla after adding days
+            slacount, day_counter = adddays(hours_avail, sla_remainder, day_counter, slacount)  # function call to loop to add days as per customer availbility and remainder of sla after adding days
             new_sla = (
                 datetime.combine(create.date(), start_time)
                 + timedelta(days=day_counter)
